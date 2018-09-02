@@ -1,0 +1,30 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "keepassxc/win64"
+  config.vm.guest = :windows
+  config.vm.communicator = "winrm"
+  config.winrm.username = "kpxc"
+  config.winrm.password = "kpxc"
+  config.ssh.username = "kpxc"
+  config.vm.boot_timeout = 200
+  config.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh", host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", guest: 3389, host: 3389, host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", guest: 5985, host: 5985, id: "winrm", host_ip: "127.0.0.1"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder "/dev/shm/teamcity-agent-work", "/work"
+  config.vm.provision "shell", inline: "C:\\PSTools\\PsExec.exe -i -s cmd.exe /c net use k: \\\\vboxsvr\\work", run: "always"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "KPXC_Windows10_Vagrant"
+    vb.memory = "8192"
+    vb.cpus = 8
+    vb.gui = false
+    vb.customize ["modifyvm", :id, "--accelerate3d", "off"]
+    vb.customize ["modifyvm", :id, "--accelerate2dvideo", "off"]
+    vb.customize ["modifyvm", :id, "--pae", "on"]
+    vb.customize ["modifyvm", :id, "--vtxux", "on"]
+    vb.customize ["modifyvm", :id, "--paravirtprovider", "hyperv"]
+  end
+end
